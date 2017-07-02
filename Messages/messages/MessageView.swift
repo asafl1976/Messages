@@ -8,7 +8,7 @@
 
 import UIKit
 
-enum MessageViewType {
+enum MessageType {
     case info
     case error
 }
@@ -22,7 +22,7 @@ class MessageView: UIView {
     fileprivate let label = LineAnimatedLabel()
     fileprivate var backgroundViewNotVisibleHeightConstrains:[NSLayoutConstraint] = []
     fileprivate var backgroundViewVisibleHeightConstrains:[NSLayoutConstraint] = []
-    fileprivate var type:MessageViewType = .info
+    fileprivate var type:MessageType = .info
     fileprivate var textColor = UIColor.black
     fileprivate var contentBackgroundColor = UIColor.white
     fileprivate lazy var actionButton:UIButton = UIButton(type: .system)
@@ -42,7 +42,7 @@ class MessageView: UIView {
         }
     }
     
-    convenience init (withType type:MessageViewType, buttonText: String?, buttonAction:(() -> ())?) {
+    convenience init (withType type:MessageType, buttonText: String?, buttonAction:(() -> ())?) {
         self.init(frame:CGRect.zero)
         
         self.type = type
@@ -62,7 +62,7 @@ class MessageView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private func setupView () {
+    fileprivate func setupView () {
         
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = contentBackgroundColor
@@ -115,7 +115,7 @@ class MessageView: UIView {
         dismiss()
     }
     
-    private func setupViewLayout() {
+    fileprivate func setupViewLayout() {
         NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
             withVisualFormat: "H:|-0-[contentView]-0-|",options: [],metrics: nil,views: views))
         backgroundViewNotVisibleHeightConstrains = NSLayoutConstraint.constraints(
@@ -186,7 +186,7 @@ class MessageView: UIView {
         CATransaction.commit()
     }
     
-    static func mainWindow() -> UIWindow? {
+    static fileprivate func mainWindow() -> UIWindow? {
         var targetWindow: UIWindow?
         let windows = UIApplication.shared.windows
         for window in windows {
@@ -199,33 +199,72 @@ class MessageView: UIView {
         return targetWindow
     }
     
-    static func showError(inView view:UIView?, withText text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity, messageView: inout MessageView?)  {
-        messageView = show(inView: view, withText: text, dismissAfter: dismissTime, type:.error)
+    /**
+     Display message to the user
+     
+     - Parameters:
+        - type: The type of the message, info/error
+        - view: The superview that the message will be displayed over. If nil, main window will be used
+        - text: The message text
+        - dismissAfter: The expiration time of the message
+     
+     - Returns: void
+     */
+
+    static func show(withType type: MessageType, inView view:UIView? = nil, withText text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity)  {
+        _ = show(inView: view == nil ? mainWindow():view, withText: text, dismissAfter: dismissTime, type:.error)
     }
     
-    static func showError(inView view:UIView?, withText text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity)  {
-        _ = show(inView: view, withText: text, dismissAfter: dismissTime, type:.error)
+    /**
+     Display message to the user, returning (inout) handler of the message
+     
+     - Parameters:
+        - type: The type of the message, info/error
+        - view: The superview that the message will be displayed over. If nil, main window will be used
+        - text: The message text
+        - dismissAfter: The expiration time of the message
+     
+     - Returns: messageView (inout parameter) to dismiss the message manually.
+     */
+    static func show(withType type: MessageType, inView view:UIView? = nil, withText text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity, messageView: inout MessageView?)  {
+        messageView = show(inView: view == nil ? mainWindow():view, withText: text, dismissAfter: dismissTime, type:.error)
+    }
+
+    /**
+     Display message to the user with a custom button
+     
+     - Parameters:
+        - type: The type of the message, info/error
+        - view: The superview that the message will be displayed over. If nil, main window will be used
+        - text: The message text
+        - buttonText: The text to be displayed on the button
+        - buttonAction: The button action
+     
+     - Returns: void
+     */
+    static func show(withType type: MessageType, inView view:UIView? = nil, withText text:String, buttonText:String, buttonAction: @escaping () -> ()) {
+        _ = show(inView: view == nil ? mainWindow():view, withText: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction)
     }
     
-    static func showError(inView view:UIView?, withText text:String, buttonText:String, messageView: inout MessageView?, buttonAction: @escaping () -> ()) {
-        messageView = show(inView: view, withText: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction)
-    }
-    
-    static func showError(inView view:UIView?, withText text:String, buttonText:String, buttonAction: @escaping () -> ()) {
-        _ = show(inView: view, withText: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction)
-    }
-    
-    static func showInfo(inView view:UIView?, withText text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity) {
-        _ = show(inView: view, withText: text, dismissAfter: dismissTime, type:.info)
-    }
-    
-    static func showInfo(inView view:UIView?, withText text:String, buttonText:String, buttonAction: @escaping () -> ()) {
-        _ = show(inView: view, withText: text, dismissAfter: TimeInterval.infinity, type:.info, buttonText:buttonText, buttonAction: buttonAction)
+    /**
+     Display message to the user with a custom button, returning (inout) handler of the message
+     
+     Parameters:
+     - type: The type of the message, info/error
+     - view: The superview that the message will be displayed over. If nil, main window will be used
+     - text: The message text
+     - buttonText: The text to be displayed on the button
+     - buttonAction: The button action
+     
+     - Returns: messageView (inout parameter) to dismiss the message manually.
+     */
+    static func show(withType type: MessageType, inView view:UIView? = nil, withText text:String, messageView: inout MessageView?, buttonText:String, buttonAction: @escaping () -> ()) {
+        messageView = show(inView: view == nil ? mainWindow():view, withText: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction)
     }
     
     static fileprivate func show(inView view:UIView?, withText text:String,
                                  dismissAfter dismissTime:TimeInterval,
-                                 type: MessageViewType, buttonText:String? = nil,
+                                 type: MessageType, buttonText:String? = nil,
                                  buttonAction: (() -> ())? = nil) -> MessageView? {
         
         guard Thread.current.isMainThread else {
