@@ -33,7 +33,7 @@ class MessageView: UIView {
     fileprivate var actionButtonText:String?
     var isVisible = false
     
-    var text:String? {
+    fileprivate var text:String? {
         didSet {
             guard let textUnwrapped = text else {
                 return
@@ -111,7 +111,7 @@ class MessageView: UIView {
         views["label"] = label
     }
     
-    func handleSwipe(_ swipeGesture: UISwipeGestureRecognizer) {
+    internal func handleSwipe(_ swipeGesture: UISwipeGestureRecognizer) {
         dismiss()
     }
     
@@ -141,20 +141,20 @@ class MessageView: UIView {
         }
     }
     
-    func actionButtonClicked() {
+    internal func actionButtonClicked() {
         DispatchQueue.main.async() {
             self.actionButtonAction?()
             self.dismiss()
         }
     }
     
-    func dismissButtonClicked() {
+    internal func dismissButtonClicked() {
         DispatchQueue.main.async() {
             self.dismiss()
         }
     }
     
-    func show() {
+    fileprivate func show() {
         isVisible = true
         NSLayoutConstraint.deactivate(backgroundViewNotVisibleHeightConstrains)
         NSLayoutConstraint.activate(backgroundViewVisibleHeightConstrains)
@@ -262,9 +262,7 @@ class MessageView: UIView {
         messageView = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction)
     }
     
-    static fileprivate func show(inView view:UIView?, text:String,
-                                 dismissAfter dismissTime:TimeInterval,
-                                 type: MessageType, buttonText:String? = nil,
+    static fileprivate func show(inView view:UIView?, text:String, dismissAfter dismissTime:TimeInterval, type: MessageType, buttonText:String? = nil,
                                  buttonAction: (() -> ())? = nil) -> MessageView? {
         
         guard Thread.current.isMainThread else {
@@ -299,7 +297,6 @@ class MessageView: UIView {
 }
 
 struct MessageViewConfiguration {
-    //var titleFont = UIFont.boldSystemFont(ofSize: 16)
     var font:UIFont? = UIFont.systemFont(ofSize: 15)
     var textAlignment:NSTextAlignment? = NSTextAlignment.left
 }
