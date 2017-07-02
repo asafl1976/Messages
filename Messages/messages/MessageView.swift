@@ -212,7 +212,7 @@ class MessageView: UIView {
      */
 
     static func show(withType type: MessageType, inView view:UIView? = nil, withText text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity)  {
-        _ = show(inView: view == nil ? mainWindow():view, withText: text, dismissAfter: dismissTime, type:.error)
+        _ = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: dismissTime, type:.error)
     }
     
     /**
@@ -226,8 +226,8 @@ class MessageView: UIView {
      
      - Returns: messageView (inout parameter) to dismiss the message manually.
      */
-    static func show(withType type: MessageType, inView view:UIView? = nil, withText text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity, messageView: inout MessageView?)  {
-        messageView = show(inView: view == nil ? mainWindow():view, withText: text, dismissAfter: dismissTime, type:.error)
+    static func show(withType type: MessageType, inView view:UIView? = nil, text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity, messageView: inout MessageView?)  {
+        messageView = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: dismissTime, type:.error)
     }
 
     /**
@@ -242,8 +242,8 @@ class MessageView: UIView {
      
      - Returns: void
      */
-    static func show(withType type: MessageType, inView view:UIView? = nil, withText text:String, buttonText:String, buttonAction: @escaping () -> ()) {
-        _ = show(inView: view == nil ? mainWindow():view, withText: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction)
+    static func show(withType type: MessageType, inView view:UIView? = nil, text:String, buttonText:String, buttonAction: @escaping () -> ()) {
+        _ = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction)
     }
     
     /**
@@ -258,11 +258,11 @@ class MessageView: UIView {
      
      - Returns: messageView (inout parameter) to dismiss the message manually.
      */
-    static func show(withType type: MessageType, inView view:UIView? = nil, withText text:String, messageView: inout MessageView?, buttonText:String, buttonAction: @escaping () -> ()) {
-        messageView = show(inView: view == nil ? mainWindow():view, withText: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction)
+    static func show(withType type: MessageType, inView view:UIView? = nil, text:String, messageView: inout MessageView?, buttonText:String, buttonAction: @escaping () -> ()) {
+        messageView = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction)
     }
     
-    static fileprivate func show(inView view:UIView?, withText text:String,
+    static fileprivate func show(inView view:UIView?, text:String,
                                  dismissAfter dismissTime:TimeInterval,
                                  type: MessageType, buttonText:String? = nil,
                                  buttonAction: (() -> ())? = nil) -> MessageView? {

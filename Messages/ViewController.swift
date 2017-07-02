@@ -37,7 +37,7 @@ class ViewController: UIViewController {
     func showBtnClicked() {
         
         var messageView:MessageView? = nil
-        MessageView.show(withType: .error, inView: view, withText: "Notifications aren't enabled, this app requires notifications to be enabled to get downloads & alerts. Please update your settings", messageView: &messageView)
+        MessageView.show(withType: .error, inView: view, text: "Notifications aren't enabled, this app requires notifications to be enabled to get downloads & alerts. Please update your settings", messageView: &messageView)
         
         
         let delay = 4 * Double(NSEC_PER_SEC)
@@ -49,12 +49,10 @@ class ViewController: UIViewController {
         let delay1 = 6 * Double(NSEC_PER_SEC)
         let time1 = DispatchTime.now() + Double(Int64(delay1)) / Double(NSEC_PER_SEC)
         DispatchQueue.main.asyncAfter(deadline: time1, execute: {
-            MessageView.show(withType: .error, withText: "Notifications aren't enabled, this app requires notifications to be enabled to get downloads & alerts. Please update your settings", buttonText: "FIX", buttonAction: {
+            MessageView.show(withType: .error, text: "Notifications aren't enabled, this app requires notifications to be enabled to get downloads & alerts. Please update your settings", buttonText: "FIX", buttonAction: {
                 print("fix")
             })
         })
-
-
     }
 }
 
