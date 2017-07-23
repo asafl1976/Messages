@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FDB2FA9C1F08D355007B80B1 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FDB2FA971F08D355007B80B1 /* OpenSans-Bold.ttf */; };
+		FDB2FA9D1F08D355007B80B1 /* OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FDB2FA981F08D355007B80B1 /* OpenSans-ExtraBold.ttf */; };
+		FDB2FA9E1F08D355007B80B1 /* OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FDB2FA991F08D355007B80B1 /* OpenSans-Light.ttf */; };
+		FDB2FA9F1F08D355007B80B1 /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FDB2FA9A1F08D355007B80B1 /* OpenSans-Regular.ttf */; };
+		FDB2FAA01F08D355007B80B1 /* OpenSans-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FDB2FA9B1F08D355007B80B1 /* OpenSans-Semibold.ttf */; };
 		FDFBEAD91EE1624D005E0636 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDFBEAD81EE1624D005E0636 /* AppDelegate.swift */; };
 		FDFBEADB1EE1624D005E0636 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDFBEADA1EE1624D005E0636 /* ViewController.swift */; };
 		FDFBEAE01EE1624D005E0636 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FDFBEADF1EE1624D005E0636 /* Assets.xcassets */; };
@@ -16,6 +21,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		FDB2FA971F08D355007B80B1 /* OpenSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Bold.ttf"; sourceTree = "<group>"; };
+		FDB2FA981F08D355007B80B1 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
+		FDB2FA991F08D355007B80B1 /* OpenSans-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Light.ttf"; sourceTree = "<group>"; };
+		FDB2FA9A1F08D355007B80B1 /* OpenSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Regular.ttf"; sourceTree = "<group>"; };
+		FDB2FA9B1F08D355007B80B1 /* OpenSans-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Semibold.ttf"; sourceTree = "<group>"; };
 		FDFBEAD51EE1624D005E0636 /* Messages.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Messages.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FDFBEAD81EE1624D005E0636 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FDFBEADA1EE1624D005E0636 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -37,6 +47,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		FDB2FA951F08D355007B80B1 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FDB2FA961F08D355007B80B1 /* Fonts */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		FDB2FA961F08D355007B80B1 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				FDB2FA971F08D355007B80B1 /* OpenSans-Bold.ttf */,
+				FDB2FA981F08D355007B80B1 /* OpenSans-ExtraBold.ttf */,
+				FDB2FA991F08D355007B80B1 /* OpenSans-Light.ttf */,
+				FDB2FA9A1F08D355007B80B1 /* OpenSans-Regular.ttf */,
+				FDB2FA9B1F08D355007B80B1 /* OpenSans-Semibold.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		FDFBEACC1EE1624D005E0636 = {
 			isa = PBXGroup;
 			children = (
@@ -57,6 +87,7 @@
 		FDFBEAD71EE1624D005E0636 /* Messages */ = {
 			isa = PBXGroup;
 			children = (
+				FDB2FA951F08D355007B80B1 /* Resources */,
 				FDFBEAEE1EE16376005E0636 /* messages */,
 				FDFBEAD81EE1624D005E0636 /* AppDelegate.swift */,
 				FDFBEADA1EE1624D005E0636 /* ViewController.swift */,
@@ -137,6 +168,11 @@
 			files = (
 				FDFBEAE01EE1624D005E0636 /* Assets.xcassets in Resources */,
 				FDFBEAEB1EE16294005E0636 /* Default-568h@2x.png in Resources */,
+				FDB2FA9C1F08D355007B80B1 /* OpenSans-Bold.ttf in Resources */,
+				FDB2FA9E1F08D355007B80B1 /* OpenSans-Light.ttf in Resources */,
+				FDB2FA9F1F08D355007B80B1 /* OpenSans-Regular.ttf in Resources */,
+				FDB2FAA01F08D355007B80B1 /* OpenSans-Semibold.ttf in Resources */,
+				FDB2FA9D1F08D355007B80B1 /* OpenSans-ExtraBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -297,6 +333,7 @@
 				FDFBEAE91EE1624D005E0636 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
