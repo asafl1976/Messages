@@ -15,13 +15,18 @@ enum MessageType {
 
 class MessageView: UIView {
     static var configuration = MessageViewConfiguration()
+    static fileprivate var dismissOverlayView = UIButton(type: .system)
+    
     fileprivate let easeInCurve:[Float] = [0.405, 0.005, 0.770, 0.050]
     fileprivate let easeOutCurve:[Float] = [0.000, 0.880, 0.605, 1]
     fileprivate let contentView = UIView()
+    fileprivate let lineView = UIView()
     fileprivate var views:[String:UIView] = [:]
     fileprivate let label = LineAnimatedLabel()
     fileprivate var backgroundViewNotVisibleHeightConstrains:[NSLayoutConstraint] = []
     fileprivate var backgroundViewVisibleHeightConstrains:[NSLayoutConstraint] = []
+    fileprivate var lineViewVisibleHeightConstrains:[NSLayoutConstraint] = []
+    fileprivate var lineViewNotVisibleHeightConstrains:[NSLayoutConstraint] = []
     fileprivate var type:MessageType = .info
     fileprivate var textColor = UIColor.black
     fileprivate var contentBackgroundColor = UIColor.white
@@ -29,6 +34,7 @@ class MessageView: UIView {
     fileprivate var dismissActionButton = UIButton(type: .system)
     fileprivate var dismissButton = UIButton(type: .system)
     fileprivate var actionButtonWidth:CGFloat = 0.0
+    fileprivate var lineViewWidth:CGFloat = 4.0
     fileprivate var actionButtonAction:(() -> ())?
     fileprivate var dismissButtonAction:(() -> ())?
     fileprivate var actionButtonText:String?
@@ -50,8 +56,8 @@ class MessageView: UIView {
         self.actionButtonText = buttonText
         self.actionButtonAction = buttonAction
         self.dismissButtonAction = dismissButtonAction
-        self.textColor = (type == .info) ? .black:.white
-        self.contentBackgroundColor = (type == .info) ? .white:.red
+        self.textColor = .black
+        self.contentBackgroundColor = .white
         setupView()
         setupViewLayout()
     }
@@ -72,6 +78,10 @@ class MessageView: UIView {
         contentView.layer.shadowOpacity = 0.25
         contentView.layer.shadowOffset = CGSize.zero
         addSubview(contentView)
+        
+        lineView.translatesAutoresizingMaskIntoConstraints = false
+        lineView.backgroundColor = (type == .error) ? MessageView.configuration.errorLineColor: MessageView.configuration.infoLineColor
+        addSubview(lineView)
         
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = textColor
@@ -117,6 +127,7 @@ class MessageView: UIView {
         
         views["superview"] = self
         views["contentView"] = contentView
+        views["lineView"] = lineView
         views["label"] = label
     }
     
@@ -133,6 +144,14 @@ class MessageView: UIView {
             withVisualFormat: "V:|-0-[contentView]-0-|",options: [],metrics: nil,views: views)
         NSLayoutConstraint.activate(backgroundViewNotVisibleHeightConstrains)
         
+        lineViewNotVisibleHeightConstrains = NSLayoutConstraint.constraints(
+            withVisualFormat: "V:[superview]-(<=1)-[lineView(lineViewWidth)]", options: [.alignAllCenterX], metrics: ["lineViewWidth":lineViewWidth],views: views)
+        
+        lineViewVisibleHeightConstrains = NSLayoutConstraint.constraints(
+            withVisualFormat: "H:[lineView(==superview)]",options: [.alignAllCenterY],metrics: nil,views: views)
+        
+        NSLayoutConstraint.activate(lineViewNotVisibleHeightConstrains)
+        
         if let _ = actionButtonText {
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
                 withVisualFormat: "V:|-15-[label(>=25)]-20-[actionButton]",options: [],metrics: nil,views: views))
@@ -142,6 +161,9 @@ class MessageView: UIView {
                 withVisualFormat: "V:[actionButton(==30)]-20-|",options: [],metrics: nil,views: views))
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
                 withVisualFormat: "V:[dismissActionButton(==30)]-20-|",options: [],metrics: nil,views: views))
+            
+            NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
+                withVisualFormat: "V:[lineView(lineViewWidth)]-0-|",options: [],metrics: ["lineViewWidth":lineViewWidth], views: views))
             
             let margin:CGFloat = 25
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
@@ -156,7 +178,13 @@ class MessageView: UIView {
                 withVisualFormat: "H:|-15-[label]-10-[dismissButton(40)]-0-|",options: [],metrics: nil,views: views))
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
                 withVisualFormat: "V:|-0-[dismissButton]-0-|",options: [],metrics: nil,views: views))
+            NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
+                withVisualFormat: "V:[lineView(lineViewWidth)]-0-|",options: [],metrics: ["lineViewWidth":lineViewWidth], views: views))
         }
+    }
+    
+    internal func dismissOverlayClicked() {
+        dismissActionButtonClicked()
     }
     
     internal func dismissActionButtonClicked() {
@@ -191,6 +219,13 @@ class MessageView: UIView {
         UIView.animate(withDuration: 0.7, delay: 0.0, options: [], animations: {
             self.layoutIfNeeded()
         })
+        CATransaction.setCompletionBlock() {
+            NSLayoutConstraint.deactivate(self.lineViewNotVisibleHeightConstrains)
+            NSLayoutConstraint.activate(self.lineViewVisibleHeightConstrains)
+            UIView.animate(withDuration: 1.0, delay: 0.6, options: .curveEaseOut, animations: {
+                self.layoutIfNeeded()
+            }, completion: nil)
+        }
         CATransaction.commit()
         label.animateIn(withDuration: 0.7, delay: 0.25, curve: easeOutCurve)
     }
@@ -199,6 +234,7 @@ class MessageView: UIView {
         label.animateOut(withDuration: 0.5, delay: 0.0, curve: easeInCurve)
         NSLayoutConstraint.deactivate(backgroundViewVisibleHeightConstrains)
         NSLayoutConstraint.activate(backgroundViewNotVisibleHeightConstrains)
+        MessageView.dismissOverlay()
         CATransaction.begin()
         CATransaction.setCompletionBlock {
             self.removeFromSuperview()
@@ -238,7 +274,7 @@ class MessageView: UIView {
      */
     
     static func show(withType type: MessageType, inView view:UIView? = nil, text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity)  {
-        _ = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: dismissTime, type:.error)
+        _ = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: dismissTime, type:type)
     }
     
     /**
@@ -253,7 +289,7 @@ class MessageView: UIView {
      - Returns: messageView (inout parameter) to dismiss the message manually.
      */
     static func show(withType type: MessageType, inView view:UIView? = nil, text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity, messageView: inout MessageView?)  {
-        messageView = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: dismissTime, type:.error)
+        messageView = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: dismissTime, type:type)
     }
     
     /**
@@ -269,7 +305,7 @@ class MessageView: UIView {
      - Returns: void
      */
     static func show(withType type: MessageType, inView view:UIView? = nil, text:String, buttonText:String, buttonAction: @escaping () -> (), dismissButtonAction: (() -> ())? = nil) {
-        _ = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction, dismissButtonAction:dismissButtonAction)
+        _ = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: TimeInterval.infinity, type:type, buttonText:buttonText, buttonAction: buttonAction, dismissButtonAction:dismissButtonAction)
     }
     
     /**
@@ -285,7 +321,17 @@ class MessageView: UIView {
      - Returns: messageView (inout parameter) to dismiss the message manually.
      */
     static func show(withType type: MessageType, inView view:UIView? = nil, text:String, messageView: inout MessageView?, buttonText:String, buttonAction: @escaping () -> (), dismissButtonAction: (() -> ())? = nil) {
-        messageView = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: TimeInterval.infinity, type:.error, buttonText:buttonText, buttonAction: buttonAction, dismissButtonAction:dismissButtonAction)
+        messageView = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: TimeInterval.infinity, type:type, buttonText:buttonText, buttonAction: buttonAction, dismissButtonAction:dismissButtonAction)
+    }
+    
+    static fileprivate func dismissOverlay() {
+        if dismissOverlayView.superview != nil {
+            UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseOut, animations: {
+                dismissOverlayView.alpha = 0.0
+            }, completion: { (completed) in
+                dismissOverlayView.removeFromSuperview()
+            })
+        }
     }
     
     static fileprivate func show(inView view:UIView?, text:String, dismissAfter dismissTime:TimeInterval, type: MessageType, buttonText:String? = nil,
@@ -299,6 +345,23 @@ class MessageView: UIView {
         guard let parentView = view else {
             print("Parent view is nil")
             return nil
+        }
+        
+        if dismissOverlayView.superview == nil {
+            dismissOverlayView.translatesAutoresizingMaskIntoConstraints = false
+            dismissOverlayView.backgroundColor = UIColor.black.withAlphaComponent(0.2)
+            //dismissOverlayView.addTarget(self, action: #selector(dismissOverlayClicked), for: UIControlEvents.touchUpInside)
+            dismissOverlayView.alpha = 0.0
+            parentView.addSubview(dismissOverlayView)
+            
+            NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
+                withVisualFormat: "H:|-0-[dismissOverlayView]-0-|",options: [],metrics: nil,views: ["dismissOverlayView":dismissOverlayView]))
+            NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
+                withVisualFormat: "V:|-0-[dismissOverlayView]-0-|",options: [],metrics: nil,views: ["dismissOverlayView":dismissOverlayView]))
+            
+            UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseOut, animations: {
+                dismissOverlayView.alpha = 1.0
+            }, completion: nil)
         }
         
         let messageView = MessageView(withType: type, buttonText: buttonText, buttonAction:buttonAction, dismissButtonAction:dismissButtonAction)
@@ -328,7 +391,9 @@ class MessageView: UIView {
 }
 
 struct MessageViewConfiguration {
-    var dismissActionButtonText = "Not Now"
+    var errorLineColor = UIColor(red: 206.0/255.0, green:112.0/255.0, blue: 0.0/255.0, alpha: 1.0)
+    var infoLineColor = UIColor(red: 26.0/255.0, green: 147.0/255.0, blue: 203.0/255.0, alpha: 1.0)
+    var dismissActionButtonText = "Not Now".localized
     var buttonFont = UIFont.boldSystemFont(ofSize: 13)
     var font:UIFont = UIFont.systemFont(ofSize: 15)
     var textAlignment:NSTextAlignment = NSTextAlignment.left
