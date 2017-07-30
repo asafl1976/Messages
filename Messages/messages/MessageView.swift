@@ -31,9 +31,9 @@ class MessageView: UIView {
     fileprivate var textColor = UIColor.black
     fileprivate var contentBackgroundColor = UIColor.white
     fileprivate var actionButton = UIButton(type: .system)
-    fileprivate var dismissActionButton = UIButton(type: .system)
     fileprivate var dismissButton = UIButton(type: .system)
     fileprivate var actionButtonWidth:CGFloat = 0.0
+    fileprivate var dismissButtonWidth:CGFloat = 0.0
     fileprivate var lineViewWidth:CGFloat = 4.0
     fileprivate var actionButtonAction:(() -> ())?
     fileprivate var dismissButtonAction:(() -> ())?
@@ -89,7 +89,7 @@ class MessageView: UIView {
         label.textAlignment = MessageView.configuration.textAlignment
         contentView.addSubview(label)
         
-        if let text = actionButtonText {
+        if let text = actionButtonText, let _ = actionButtonAction {
             let buttonFont = MessageView.configuration.buttonFont
             actionButtonWidth = max(60, text.size(attributes: [NSFontAttributeName: buttonFont]).width + 20.0)
             actionButton.translatesAutoresizingMaskIntoConstraints = false
@@ -102,17 +102,20 @@ class MessageView: UIView {
             actionButton.setTitleColor(textColor, for: .normal)
             contentView.addSubview(actionButton)
             
-            actionButtonWidth = max(60, text.size(attributes: [NSFontAttributeName: buttonFont]).width + 35.0)
-            dismissActionButton.translatesAutoresizingMaskIntoConstraints = false
-            dismissActionButton.addTarget(self, action: #selector(dismissActionButtonClicked), for: UIControlEvents.touchUpInside)
-            dismissActionButton.titleLabel?.font = buttonFont
-            dismissActionButton.setTitle(MessageView.configuration.dismissActionButtonText, for: .normal)
-            dismissActionButton.setTitleColor(textColor, for: .normal)
-            contentView.addSubview(dismissActionButton)
-            
-            views["dismissActionButton"] = dismissActionButton
+            //Create dismiss button with text
+            dismissButtonWidth = max(60, text.size(attributes: [NSFontAttributeName: buttonFont]).width + 35.0)
+            dismissButton.translatesAutoresizingMaskIntoConstraints = false
+            dismissButton.addTarget(self, action: #selector(dismissButtonClicked), for: UIControlEvents.touchUpInside)
+            dismissButton.titleLabel?.font = buttonFont
+            dismissButton.setTitle(MessageView.configuration.dismissActionButtonText, for: .normal)
+            dismissButton.setTitleColor(textColor, for: .normal)
+            contentView.addSubview(dismissButton)
+            views["dismissButton"] = dismissButton
             views["actionButton"] = actionButton
+            
         } else {
+            
+            //Create dismiss button with x
             dismissButton.translatesAutoresizingMaskIntoConstraints = false
             dismissButton.addTarget(self, action: #selector(dismissButtonClicked), for: UIControlEvents.touchUpInside)
             dismissButton.setImage(UIImage(named: "dismissMessage"), for: .normal)
@@ -152,7 +155,7 @@ class MessageView: UIView {
         
         NSLayoutConstraint.activate(lineViewNotVisibleHeightConstrains)
         
-        if let _ = actionButtonText {
+        if let _ = actionButtonText, let _ = actionButtonAction {
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
                 withVisualFormat: "V:|-15-[label(>=25)]-20-[actionButton]",options: [],metrics: nil,views: views))
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
@@ -160,14 +163,14 @@ class MessageView: UIView {
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
                 withVisualFormat: "V:[actionButton(==30)]-20-|",options: [],metrics: nil,views: views))
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
-                withVisualFormat: "V:[dismissActionButton(==30)]-20-|",options: [],metrics: nil,views: views))
+                withVisualFormat: "V:[dismissButton(==30)]-20-|",options: [],metrics: nil,views: views))
             
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
                 withVisualFormat: "V:[lineView(lineViewWidth)]-0-|",options: [],metrics: ["lineViewWidth":lineViewWidth], views: views))
             
             let margin:CGFloat = 25
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
-                withVisualFormat: "H:|-margin-[dismissActionButton(>=actionButtonWidth)]",options: [],metrics: ["actionButtonWidth":actionButtonWidth,"margin":margin],views: views))
+                withVisualFormat: "H:|-margin-[dismissButton(>=dismissButtonWidth)]",options: [],metrics: ["dismissButtonWidth":dismissButtonWidth,"margin":margin],views: views))
             NSLayoutConstraint.activate( NSLayoutConstraint.constraints(
                 withVisualFormat: "H:[actionButton(>=actionButtonWidth)]-margin-|",options: [],metrics: ["actionButtonWidth":actionButtonWidth,"margin":margin],views: views))
             
@@ -184,14 +187,7 @@ class MessageView: UIView {
     }
     
     internal func dismissOverlayClicked() {
-        dismissActionButtonClicked()
-    }
-    
-    internal func dismissActionButtonClicked() {
-        DispatchQueue.main.async() {
-            self.dismissButtonAction?()
-            self.dismiss()
-        }
+        dismissButtonClicked()
     }
     
     internal func actionButtonClicked() {
@@ -288,12 +284,13 @@ class MessageView: UIView {
      
      - Returns: messageView (inout parameter) to dismiss the message manually.
      */
-    static func show(withType type: MessageType, inView view:UIView? = nil, text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity, messageView: inout MessageView?)  {
-        messageView = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: dismissTime, type:type)
+    static func show(withType type: MessageType, inView view:UIView? = nil, text:String, dismissAfter dismissTime:TimeInterval = TimeInterval.infinity, messageView: inout MessageView?, dismissButtonAction: (() -> ())? = nil)  {
+        //messageView = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: dismissTime, type:type)
+        messageView = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: TimeInterval.infinity, type:type, buttonText:nil, buttonAction: nil, dismissButtonAction:dismissButtonAction)
     }
     
     /**
-     Display message to the user with a custom button
+     Display message to the user with a custom button and dismiss button
      
      - Parameters:
      - type: The type of the message, info/error
@@ -306,6 +303,7 @@ class MessageView: UIView {
      */
     static func show(withType type: MessageType, inView view:UIView? = nil, text:String, buttonText:String, buttonAction: @escaping () -> (), dismissButtonAction: (() -> ())? = nil) {
         _ = show(inView: view == nil ? mainWindow():view, text: text, dismissAfter: TimeInterval.infinity, type:type, buttonText:buttonText, buttonAction: buttonAction, dismissButtonAction:dismissButtonAction)
+        
     }
     
     /**
@@ -350,7 +348,6 @@ class MessageView: UIView {
         if dismissOverlayView.superview == nil {
             dismissOverlayView.translatesAutoresizingMaskIntoConstraints = false
             dismissOverlayView.backgroundColor = UIColor.black.withAlphaComponent(0.2)
-            //dismissOverlayView.addTarget(self, action: #selector(dismissOverlayClicked), for: UIControlEvents.touchUpInside)
             dismissOverlayView.alpha = 0.0
             parentView.addSubview(dismissOverlayView)
             
@@ -393,7 +390,7 @@ class MessageView: UIView {
 struct MessageViewConfiguration {
     var errorLineColor = UIColor(red: 206.0/255.0, green:112.0/255.0, blue: 0.0/255.0, alpha: 1.0)
     var infoLineColor = UIColor(red: 26.0/255.0, green: 147.0/255.0, blue: 203.0/255.0, alpha: 1.0)
-    var dismissActionButtonText = "Not Now".localized
+    var dismissActionButtonText = "Not Now"
     var buttonFont = UIFont.boldSystemFont(ofSize: 13)
     var font:UIFont = UIFont.systemFont(ofSize: 15)
     var textAlignment:NSTextAlignment = NSTextAlignment.left
